@@ -25,29 +25,29 @@ public:
         : destination(dest), requiredMiles(miles), connectingAirport(connect) {}
 };
 
-
-//JALCardクラス
+//JALCardクラス,基底クラス
 class JALCard {
 protected:
-    string type;
-    int milesPerYen;
+    string type;      //カードの種類を定義
+    int milesPerYen;  //１円あたりに貯まるマイル数を定義
 public:
     JALCard(const string& cardType, int milesPerYenSpent)
         : type(cardType), milesPerYen(milesPerYenSpent) {}
 
-    virtual ~JALCard() {}
+    virtual ~JALCard() {}     //仮想デストラクタ
 
-    virtual int calculateRequiredYen(int requiredMiles) = 0;
-    virtual int adjustMiles(int requiredMiles) = 0;
+    //純粋仮想関数
+    virtual int calculateRequiredYen(int requiredMiles) = 0;  //必要な金額を計算
+    virtual int adjustMiles(int requiredMiles) = 0;           //必要なマイル数を計算
 };
 
-
+//JALNaviCardカード(派生クラス)
 class JALNaviCard : public JALCard {
 public:
-    JALNaviCard() : JALCard("JALNavi", 1) {}
+    JALNaviCard() : JALCard("JALNavi", 1) {}   //JALNaviは１円あたり１マイル
 
     int calculateRequiredYen(int requiredMiles) override {
-        return requiredMiles * 100;
+        return requiredMiles * 100;       //１マイル100円より100をかける
     }
     
     int adjustMiles(int requiredMiles) override {
@@ -55,20 +55,23 @@ public:
     }
 };
 
+//JAL普通カード(派生クラス)
 class JALStandardCard : public JALCard {
 public:
-    JALStandardCard() : JALCard("JALStandard", 0.5) {}
+    JALStandardCard() : JALCard("JALStandard", 0.5) {}  //JAL普通カードは1円あたり0.5マイル
 
     int calculateRequiredYen(int requiredMiles) override {
-        return requiredMiles * 200;
+        return requiredMiles * 200;     //1マイル200円より200をかける
     }
     
     int adjustMiles(int requiredMiles) override {
-        return requiredMiles;
+        return requiredMiles;    //必要マイル数はそのまま
     }
 };
 
+//指定された目的地から行ける目的地を地域別に分類して表示する関数(printDestinations)を独自に定義
 void printDestinations(const vector<Flight>& flights, const vector<Flight>& connectingFlights, const string& departure) {
+    //地域別の目的地一覧
     map<string, set<string>> regions = {
         {"北海道", {"函館(HKD)", "奥尻(OIR)", "札幌(SPK)", "利尻(RIS)", "女満別(MMB)", "根室中標津(SHB)", "釧路(KUH)", "旭川(AKJ)", "帯広(OBO)"}},
         {"東北", {"青森(AOJ)", "三沢(MSJ)", "秋田(AXT)", "花巻(HNA)", "仙台(SDJ)", "山形(GAJ)"}},
@@ -80,22 +83,25 @@ void printDestinations(const vector<Flight>& flights, const vector<Flight>& conn
         {"九州", {"福岡(FUK)", "北九州(KKJ)", "五島福江(FUJ)", "対馬(TSJ)", "長崎(NGS)", "壱岐(IKI)", "熊本(KMJ)", "天草(AXJ)", "大分(OIT)", "宮崎(KMI)", "鹿児島(KOJ)", "種子島(TNE)", "屋久島(KUM)", "喜界島(KKX)", "奄美大島(ASJ)", "徳之島(TKN)", "沖永良部(OKE)", "与論(RNJ)"}},
         {"沖縄", {"沖縄（那覇）(OKA)", "久米島(UEO)", "宮古(MMY)", "与那国(OGN)", "石垣(ISG)", "北大東(KTD)", "南大東(MMD)"}},
     };
-
-    unordered_set<string> uniqueDestinations;
+   //直行便の目的地リストを追加
+    unordered_set<string> forDestinations;
     for (const auto& flight : flights) {
-        uniqueDestinations.insert(flight.destination);
+        forDestinations.insert(flight.destination);
     }
+    //乗り換え便の目的地リストを追加
     for (const auto& flight : connectingFlights) {
-        uniqueDestinations.insert(flight.destination);
+        forDestinations.insert(flight.destination);
     }
-
+    //各地域とその地域の目的地
     for (const auto& region : regions) {
         vector<string> destList;
-        for (const auto& dest : uniqueDestinations) {
+        for (const auto& dest : forDestinations) {
+            //目的地が現在の地域の目的地に含まれているか、目的地が出発地と異なるか
             if (region.second.find(dest) != region.second.end() && dest != departure) {
-                destList.push_back(dest);
+                destList.push_back(dest);  //目的地destをdestListに追加
             }
         }
+        //destListが空じゃない場合に地域とその地域の行ける目的地を表示
         if (!destList.empty()) {
             cout << region.first << ":\n";
             for (const auto& dest : destList) {
@@ -106,6 +112,7 @@ void printDestinations(const vector<Flight>& flights, const vector<Flight>& conn
 }
 
 int main() {
+    //直行便のデータ
     map<string, vector<Flight>> flights = {
         {"札幌(SPK)", {{"函館(HKD)", 4000}, {"奥尻(OIR)", 4000}, {"利尻(RIS)", 5000}, {"女満別(MMB)", 5000}, {"根室中標津(SHB)", 5000},
                    {"釧路(KUH)", 5000}, {"青森(AOJ)", 5000}, {"三沢(MSJ)", 5000}, {"秋田(AXT)", 6000}, {"花巻(HNA)", 6000},
@@ -143,16 +150,18 @@ int main() {
     };
 
     map<string, vector<Flight>> connectingFlights = {
-        {"東京(TYO)", {{"但馬(TJH)", 7000, "大阪(OSA)"}, {"隠岐(OKI)", 8000, "大阪(OSA)or出雲(IZO)"},
-                  {"対馬(TSJ)", 8000, "福岡(FUK)or長崎(NGS)"},{"五島福江(FUJ)", 8000, "福岡(FUK)or長崎(NGS)"},
-                  {"壱岐(IKI)", 8000, "長崎(NGS)"}, {"天草(AXJ)", 8000, "福岡(FUK)or熊本(KMJ)"},
-                  {"種子島(TNE)", 8000, "鹿児島(KOJ)"}, {"屋久島(KUM)", 8000, "大阪(OSA)or福岡(FUK)or鹿児島(KOJ)"},
-                  {"喜界島(KKX)", 8000, "鹿児島(KOJ)or奄美大島(ASJ)"},{"徳之島(TKN)", 9000, "鹿児島(KOJ)or奄美大島(ASJ)"},
-                  {"沖永良部(OKE)", 9000, "鹿児島(KOJ)or沖縄（那覇）(OKA)"},
-                  {"与論(RNJ)", 9000, "鹿児島(KOJ)or沖縄（那覇）(OKA)"},{"与那国(OGN)", 10000, "沖縄（那覇）(OKA)or石垣(ISG)"}}}
+        //乗り換え便のデータ
+        {"東京(TYO)", {{"但馬(TJH)", 7000, "大阪(OSA)"}, {"隠岐(OKI)", 8000, "大阪(OSA)または出雲(IZO)"},
+                  {"対馬(TSJ)", 8000, "福岡(FUK)または長崎(NGS)"},{"五島福江(FUJ)", 8000, "福岡(FUK)または長崎(NGS)"},
+                  {"壱岐(IKI)", 8000, "長崎(NGS)"}, {"天草(AXJ)", 8000, "福岡(FUK)または熊本(KMJ)"},
+                  {"種子島(TNE)", 8000, "鹿児島(KOJ)"}, {"屋久島(KUM)", 8000, "大阪(OSA)または福岡(FUK)または鹿児島(KOJ)"},
+                  {"喜界島(KKX)", 8000, "鹿児島(KOJ)または奄美大島(ASJ)"},{"徳之島(TKN)", 9000, "鹿児島(KOJ)または奄美大島(ASJ)"},
+                  {"沖永良部(OKE)", 9000, "鹿児島(KOJ)または沖縄（那覇）(OKA)"},
+                  {"与論(RNJ)", 9000, "鹿児島(KOJ)または沖縄（那覇）(OKA)"},{"与那国(OGN)", 10000, "沖縄（那覇）(OKA)または石垣(ISG)"}}}
     };
     
     map<string, string> airportShortcuts = {
+        //空港の略称と正式名称のデータ
         {"AKJ", "旭川(AKJ)"}, {"HKD", "函館(HKD)"}, {"KUH", "釧路(KUH)"}, {"MMB", "女満別(MMB)"},{"OBO", "帯広(OBO)"},
         {"OIR", "奥尻(OIR)"}, {"SPK", "札幌(SPK)"}, {"AOJ", "青森(AOJ)"},{"AXT", "秋田(AXT)"}, {"GAJ", "山形(GAJ)"},
         {"HNA", "花巻(HNA)"}, {"MSJ", "三沢(MSJ)"},{"SDJ", "仙台(SDJ)"}, {"KIJ", "新潟(KIJ)"}, {"MMJ", "松本(MMJ)"},
@@ -166,7 +175,8 @@ int main() {
         {"TSJ", "対馬(TSJ)"}, {"AXJ", "天草(AXJ)"}, {"IKI", "壱岐(IKI)"}, {"RIS", "利尻(RIS)"}, {"FSZ", "静岡(FSZ)"},
         {"SHB", "根室中標津(SHB)"}, {"KTD", "北大東(KTD)"}, {"MMD", "南大東(MMD)"}
     };
-
+    
+    //カードの種類、現在のマイル数、出発地を入力
     string cardType, departure, destination;
     int currentMiles;
     char roundTrip;
@@ -178,11 +188,11 @@ int main() {
     cout << "出発地を入力してください（札幌(SPK)、東京(TYO)、名古屋(NGO)、大阪(OSA)、福岡(FUK)、鹿児島(KOJ)、沖縄（那覇）(OKA)）：";
     cin >> departure;
     
-    // 出発地の略称を変換
+    // 出発地の略称を正式名称に変換
     if (airportShortcuts.find(departure) != airportShortcuts.end()) {
         departure = airportShortcuts[departure];
     } else {
-        cout << "無効な出発地が入力されました。" << endl;
+        cout << "入力された出発地が見つかりませんでした。出発地を確認してください。" << endl;
         return 1;
     }
 
@@ -191,59 +201,66 @@ int main() {
     if (flights.find(departure) != flights.end()) {
         printDestinations(flights[departure], connectingFlights[departure], departure);
     } else {
-        cout << "該当する出発地が見つかりません。" << endl;
+        cout << "入力された出発地が見つかりませんでした。出発地を確認してください" << endl;
         return 1;
     }
-
+    
+    //目的地を入力
     cout << "行きたい場所を入力してください：";
     cin >> destination;
     
-    // 目的地の略称を変換
+    // 目的地の略称を正式名称に変換
     if (airportShortcuts.find(destination) != airportShortcuts.end()) {
         destination = airportShortcuts[destination];
     } else {
-        cout << "無効な目的地が入力されました。" << endl;
+        cout << "入力された目的地が見つかりませんでした。目的地を確認してください。" << endl;
         return 1;
     }
     
+    //片道か往復かを入力
     cout << "片道（O）または往復（R）を選択してください：";
     cin >> roundTrip;
-
+    
+    //入力されたカードの種類に応じてカードのオブジェクトを生成、格納
     JALCard* card;
     if (cardType == "N") {
             card = new JALNaviCard();
         } else if (cardType == "S") {
             card = new JALStandardCard();
         } else {
-            cout << "無効なカード種類が入力されました。" << endl;
+            cout << "選択肢外カード種類が入力されました。カードの種類を確認してください。" << endl;  //N、S以外が入力された場合
             return 1;
         }
-
+ 
+    //目的地が見つかったか
     bool found = false;
+    //指定された出発地の直行便のデータ
     for (auto it = flights[departure].begin(); it != flights[departure].end(); ++it) {
         if (it->destination == destination) {
-            found = true;
-            int adjustedMiles = card->adjustMiles(it->requiredMiles);
-            int neededMiles = adjustedMiles * (roundTrip == 'R' ? 2 : 1) - currentMiles;
-            if (neededMiles < 0) neededMiles = 0;
+            found = true;     //目的地が見つかった場合
+            int adjustedMiles = card->adjustMiles(it->requiredMiles);                //必要マイル数をカードの種類に応じて調整
+            int neededMiles = adjustedMiles * (roundTrip == 'R' ? 2 : 1) - currentMiles; //往復なら2倍
+            if (neededMiles < 0) neededMiles = 0;                                        //足りていたら0マイルにする
 
-            int requiredYen = card->calculateRequiredYen(neededMiles);
+            int requiredYen = card->calculateRequiredYen(neededMiles);         //必要マイル数から使用しないといけない金額を計算
+            
+            //目的地を片道、往復のマイル数、使用しないといけない金額を出力
             cout << "目的地: " << destination << "\n"
                       <<  destination <<"までのマイル数（片道）: " << adjustedMiles << "\n"
                       << destination <<"までのマイル数（往復）: " << adjustedMiles * 2 << "\n"
                       << "必要となるマイル数（-:不足，+:充足）: " << currentMiles - adjustedMiles * (roundTrip == 'R' ? 2 : 1) << "マイル\n"
                       << "使用しないといけない金額: " << requiredYen << "円\n";
-  //          if (!it->connectingAirport.empty()) {
-   //             cout << "目的地には" << it->connectingAirport <<"空港での乗り換えが必要です\n";
-  //          }
+ 
             break;
         }
     }
 
+    //直行便にデータがなかった場合
     if (!found && connectingFlights.find(departure) != connectingFlights.end()) {
+        //指定された出発地の乗り換え便のデータ
         for (auto it = connectingFlights[departure].begin(); it != connectingFlights[departure].end(); ++it) {
             if (it->destination == destination) {
-                found = true;
+                found = true;     //目的地が見つかった場合、以下直行便のときと同様
                 int adjustedMiles = card->adjustMiles(it->requiredMiles);
                 int neededMiles = adjustedMiles * (roundTrip == 'R' ? 2 : 1) - currentMiles;
                 if (neededMiles < 0) neededMiles = 0;
@@ -254,6 +271,7 @@ int main() {
                           << destination <<"までのマイル数（往復）: " << adjustedMiles * 2 << "\n"
                           << "必要となるマイル数（-:不足，+:充足）: " << currentMiles - adjustedMiles * (roundTrip == 'R' ? 2 : 1) <<"マイル\n"
                           << "使用しないといけない金額: " << requiredYen << "円\n";
+                //乗り換え便にデータあった場合に乗り換え先の空港を表示
                 if (!it->connectingAirport.empty()) {
                     cout << "目的地には" << it->connectingAirport <<"空港での乗り換えが必要です\n";
                 }
@@ -261,9 +279,9 @@ int main() {
             }
         }
     }
-
+    //目的地が見つからなかった場合
     if (!found) {
-        cout << "該当する目的地が見つかりません。\n";
+        cout << "入力された目的地が見つかりません。目的地一覧にあるか確認してください。\n";
     }
 
     delete card;

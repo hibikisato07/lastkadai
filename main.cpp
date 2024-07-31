@@ -38,13 +38,13 @@ public:
 
     //純粋仮想関数
     virtual int calculateRequiredYen(int requiredMiles) = 0;  //必要な金額を計算
-    virtual int adjustMiles(int requiredMiles) = 0;           //必要なマイル数を計算
+    virtual int adjustMiles(int requiredMiles) = 0;           //必要なマイル率を計算
 };
 
 //JALNaviCardカード(派生クラス)
 class JALNaviCard : public JALCard {
 public:
-    JALNaviCard() : JALCard("JALNavi", 1) {}   //JALNaviは１円あたり１マイル
+    JALNaviCard() : JALCard("JALNavi", 1) {}   //JALNaviのマイル率
 
     int calculateRequiredYen(int requiredMiles) override {
         return requiredMiles * 100;       //１マイル100円より100をかける
@@ -58,7 +58,7 @@ public:
 //JAL普通カード(派生クラス)
 class JALStandardCard : public JALCard {
 public:
-    JALStandardCard() : JALCard("JALStandard", 0.5) {}  //JAL普通カードは1円あたり0.5マイル
+    JALStandardCard() : JALCard("JALStandard", 0.5) {}  //JAL普通カードのマイル率
 
     int calculateRequiredYen(int requiredMiles) override {
         return requiredMiles * 200;     //1マイル200円より200をかける

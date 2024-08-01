@@ -29,7 +29,7 @@ public:
 class JALCard {
 protected:
     string type;      //カードの種類を定義
-    int milesPerYen;  //１円あたりに貯まるマイル数を定義
+    int milesPerYen;  //１円あたりに貯まるマイル率を定義
 public:
     JALCard(const string& cardType, int milesPerYenSpent)
         : type(cardType), milesPerYen(milesPerYenSpent) {}
@@ -145,7 +145,7 @@ int main() {
                   {"静岡(FSZ)", 8000},{"出雲(IZO)", 8000},{"徳島(TKS)", 8000},  {"東京(TYO)", 8000}, {"広島(HIJ)", 9000}}},
         {"沖縄（那覇）(OKA)", {{"沖永良部(OKE)", 4000}, {"与論(RNJ)", 4000}, {"久米島(UEO)", 4000}, {"奄美大島(ASJ)", 5000}, {"宮古(MMY)", 5000},
                   {"石垣(ISG)", 6000}, {"北大東(KTD)", 6000}, {"南大東(MMD)", 6000}, {"与那国(OGN)", 7000}, {"岡山(OKJ)", 8000},
-                  {"福岡(FUK)", 8000}, {"大阪(OSA)", 8000}, {"東京(TYO)", 9000}, {"名古屋(NGO)", 9000}, {"小松(KMW)", 9000}, {"広島(HIJ)", 9000}}},
+                  {"福岡(FUK)", 8000}, {"大阪(OSA)", 8000}, {"東京(TYO)", 9000}, {"名古屋(NGO)", 9000}, {"小松(KMW)", 9000}, {"広島(HIJ)", 9000}}}
 
     };
 
@@ -183,16 +183,16 @@ int main() {
 
     cout << "JALカードの種類を入力してください（JALNavi(N)またはJAL普通カード(S)）：";
     cin >> cardType;
-    cout << "現在のマイル数を入力してください：";
+    cout << "現在のマイル数（0および自然数）を入力してください：";
     cin >> currentMiles;
-    cout << "出発地を入力してください（札幌(SPK)、東京(TYO)、名古屋(NGO)、大阪(OSA)、福岡(FUK)、鹿児島(KOJ)、沖縄（那覇）(OKA)）：";
+    cout << "出発地（略称）を入力してください（札幌(SPK)、東京(TYO)、名古屋(NGO)、大阪(OSA)、福岡(FUK)、鹿児島(KOJ)、沖縄（那覇）(OKA)）：";
     cin >> departure;
     
     // 出発地の略称を正式名称に変換
     if (airportShortcuts.find(departure) != airportShortcuts.end()) {
         departure = airportShortcuts[departure];
     } else {
-        cout << "入力された出発地が見つかりませんでした。出発地を確認してください。" << endl;
+        cout << "入力された出発地が見つかりませんでした。確認してください。また、マイルの入力が正しいか確認してください" << endl;
         return 1;
     }
 
@@ -206,7 +206,7 @@ int main() {
     }
     
     //目的地を入力
-    cout << "行きたい場所を入力してください：";
+    cout << "行きたい場所（略称）を入力してください：";
     cin >> destination;
     
     // 目的地の略称を正式名称に変換
@@ -218,7 +218,7 @@ int main() {
     }
     
     //片道か往復かを入力
-    cout << "片道（O）または往復（R）を選択してください：";
+    cout << "片道（O）または往復（R）を選択してください('R'以外の入力の場合片道で算出)：";
     cin >> roundTrip;
     
     //入力されたカードの種類に応じてカードのオブジェクトを生成、格納
